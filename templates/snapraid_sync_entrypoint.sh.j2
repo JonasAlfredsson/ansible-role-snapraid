@@ -1,0 +1,36 @@
+#!/bin/bash
+################################################################################
+#>> This file is managed by Ansible - changes made here will be overwritten. <<#
+################################################################################
+
+CONFIG_FILE='{{ item.config }}' \
+LOG_FILE="{{ snapraid_sync_log_dir }}/{{ item.name }}.log" \
+NONINTERACTIVE="${NONINTERACTIVE:-false}" \
+{% if item.email_address is defined %}
+EMAIL_ADDRESS='{{ item.email_address }}' \
+{% endif %}
+{% if item.email_subject_prefix is defined %}
+EMAIL_SUBJECT_PREFIX="{{ item.email_subject_prefix }}" \
+{% endif %}
+{% if item.detele_threshold is defined %}
+DELETE_THRESHOLD='{{ item.detele_threshold }}' \
+{% endif %}
+{% if item.update_threshold is defined %}
+UPDATE_THRESHOLD='{{ item.update_threshold }}' \
+{% endif %}
+{% if item.scrub_percent is defined %}
+SCRUB_PERCENT='{{ item.scrub_percent }}' \
+{% endif %}
+{% if item.scrub_age is defined %}
+SCRUB_AGE='{{ item.scrub_age }}' \
+{% endif %}
+{% if item.attach_log is defined %}
+MAIL_ATTACH_LOG='{{ item.attach_log }}' \
+{% endif %}
+{% if item.snapraid_bin is defined %}
+SNAPRAID_BIN="{{ item.snapraid_bin }}" \
+{% endif %}
+{% if item.mail_bin is defined %}
+MAIL_BIN="{{ item.mail_bin }}" \
+{% endif %}
+{{ snapraid_sync_script_dir }}/snapraid_sync.sh "$@"

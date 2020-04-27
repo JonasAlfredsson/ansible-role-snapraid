@@ -1,0 +1,49 @@
+---
+- name: Create folder structure required by 'snapraid_sync'
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0750'
+    owner: "root"
+    group: "root"
+  with_items:
+    - "{{ snapraid_sync_log_dir }}"
+    - "{{ snapraid_sync_script_dir }}"
+  when: item != ""
+
+- name: Push out 'snapraid_sync' script driectory
+  become: true
+  copy:
+    src: "snapraid_sync/src/"
+    dest: "{{ snapraid_sync_script_dir }}"
+    mode: '0750'
+
+- name: Push out 'entrypoint' script
+  become: true
+  template:
+    src: snapraid_sync_entrypoint.sh.j2
+    dest: "{{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{ item.name }}.sh"
+    mode: '0750'
+  with_items: "{{ snapraid_sync }}"
+
+- name: Push out cron jobs
+  become: true
+  template:
+    dest: "/etc/cron.d/{{ item.name }}"
+    src: cron.j2
+    mode: '0750'
+  with_items: "{{ snapraid_sync }}"
+
+- name: Configure mutt
+  become: true
+  template:
+    dest: "{{ snapraid_muttrc_path }}"
+    src: muttrc.j2
+    mode: '0600'
+
+- name: Push out logrotate configuration for snapraid_sync
+  become: true
+  template:
+    dest: "/etc/logrotate.d/snapraid_sync"
+    src: logrotate_snapraid_sync.j2

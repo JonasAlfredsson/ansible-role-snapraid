@@ -1,0 +1,56 @@
+---
+- name: Download SnapRAID installation files
+  get_url:
+    url: "https://github.com/amadvance/snapraid/releases/download/v{{ snapraid_version }}/snapraid-{{ snapraid_version }}.tar.gz"
+    dest: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}.tar.gz"
+
+- name: Unpack SnapRAID installation files
+  unarchive:
+    remote_src: true
+    src: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}.tar.gz"
+    dest: "{{ snapraid_tmp_dir }}"
+
+- name: Prepare the SnapRAID files for building the program
+  shell: ./configure
+  args:
+    chdir: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}"
+  register: snapraid_make_configure
+  failed_when: >
+    ("config.status: creating config.h" not in snapraid_make_configure.stdout_lines|last)
+    and
+    ("config.status: config.h is unchanged" not in snapraid_make_configure.stdout_lines|last)
+
+- name: Build the SnapRAID program
+  make:
+    chdir: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}"
+
+- name: Run all build checks (this will take a long time)
+  make:
+    chdir: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}"
+    target: check
+
+- name: Install SnapRAID
+  become: true
+  make:
+    chdir: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}"
+    target: install
+
+- name: Query the newly installed version of SnapRAID
+  become: true
+  shell: snapraid --version | sed -rn 's/snapraid v([0-9]+\.[0-9]+).*$/\1/p'
+  register: snapraid_installed_version
+
+- fail:
+    msg: "SnapRAID is reporting '{{ snapraid_installed_version.stdout }}' as the installed version instead of the requested '{{ snapraid_version }}'"
+  when: snapraid_installed_version.stdout is not version(snapraid_version, '==')
+
+- name: Remove installation files
+  no_log: True
+  file:
+    path: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}"
+    state: absent
+
+- name: Remove tar archive
+  file:
+    path: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}.tar.gz"
+    state: absent

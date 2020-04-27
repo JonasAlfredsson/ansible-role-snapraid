@@ -1,0 +1,65 @@
+################################################################################
+#>> This file is managed by Ansible - changes made here will be overwritten. <<#
+################################################################################
+#
+# Configuration file for Snapraid array "{{ array.name }}"
+
+# Parity drives
+{% for drive in array.parity_drives %}
+{% if loop.index == 1 %}
+parity {{ drive.mount }}/snapraid.parity
+{% else %}
+{{ loop.index }}-parity {{ drive.mount }}/snapraid.{{ loop.index }}-parity
+{% endif %}
+{% endfor %}
+
+# Content files
+content {{ array.primary_content_file }}
+{% for drive in array.parity_drives %}
+{% if drive.content_file is defined and drive.content_file|bool == true %}
+content {{ drive.mount }}/snapraid.content
+{% endif %}
+{% endfor %}
+{% for drive in array.data_drives %}
+{% if drive.content_file is not defined or drive.content_file|bool == true %}
+content {{ drive.mount }}/snapraid.content
+{% endif %}
+{% endfor %}
+
+# Data drives
+{% for drive in array.data_drives %}
+data {{ drive.name }} {{ drive.mount }}/
+{% endfor %}
+
+{% if array.exclude_hidden_items is defined and array.exclude_hidden_items|bool == true %}
+# Exclude hidden files and directories
+nohidden
+
+{% endif %}
+# Files and directories to exclude
+{% if array.exclude_items is defined %}
+{% for item in array.exclude_items %}
+exclude {{ item }}
+{% endfor %}
+{% else %}
+exclude *.unrecoverable
+exclude /tmp/
+exclude /lost+found/
+{% endif %}
+{% if array.blocksize is defined %}
+
+# The block size in kibi bytes (1024 bytes)
+blocksize {{ array.blocksize }}
+{% endif %}
+{% if array.hashsize is defined %}
+
+# The hash size in bytes
+hashsize {{ array.hashsize }}
+{% endif %}
+
+# Save the state after the specified amount of GB has been processed
+{% if array.autosave is defined %}
+autosave {{ array.autosave }}
+{% else %}
+autosave 500
+{% endif %}

@@ -1,0 +1,18 @@
+---
+- fail:
+    msg: "You need at least one parity drive for SnapRAID to work"
+  when: array.parity_drives is not defined or array.parity_drives|length == 0
+
+- fail:
+    msg: "SnapRAID only support a maximum of 6 parity drives"
+  when: array.parity_drives|length > 6
+
+- fail:
+    msg: "You need at least one data drive for SnapRAID to work"
+  when: array.data_drives is not defined or array.data_drives|length == 0
+
+- name: "Push out the SnapRAID configuration file for array '{{ array.name }}'"
+  become: true
+  template:
+    dest: "{{ array.config_file }}"
+    src: snapraid.conf.j2

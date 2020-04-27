@@ -1,0 +1,12 @@
+################################################################################
+#>> This file is managed by Ansible - changes made here will be overwritten. <<#
+################################################################################
+{{ snapraid_sync_log_dir }}/*.log {
+    {{ snapraid_sync_logrotate_interval | default('daily') }}
+    missingok
+    rotate {{ snapraid_sync_logrotate_count | default('7') }}
+    notifempty
+    compress
+    delaycompress
+    nocreate
+}

@@ -1,0 +1,51 @@
+---
+- fail:
+    msg: You need to define which version of SnapRAID that should be installed
+  when: snapraid_version is not defined or snapraid_version == ''
+
+- name: Install packages necessary for building and running SnapRAID
+  become: true
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - gcc
+      - make
+      - mutt
+      - logrotate
+      - smartmontools
+      - unzip
+
+- name: Get the currently installed version of SnapRAID
+  become: true
+  shell: snapraid --version | sed -rn 's/snapraid v([0-9]+\.[0-9]+).*$/\1/p'
+  register: snapraid_current_version
+  failed_when: >
+    (snapraid_current_version.rc != 0)
+    and not
+    ("snapraid: command not found" in snapraid_current_version.stderr)
+
+- name: Verify that the requested version of SnapRAID is newer than the one installed
+  block:
+    - fail:
+        msg: "The installed version of Snapraid ({{ snapraid_current_version.stdout }}) is newer than the requested version ({{ snapraid_version }})"
+      when: snapraid_current_version.stdout is version(snapraid_version, '>')
+
+    - name: Install new version of SnapRAID
+      include: install_snapraid.yml
+      when: snapraid_current_version.stdout is version(snapraid_version, '<')
+  when: snapraid_current_version.stdout != ''
+
+- name: Install SnapRAID
+  include: install_snapraid.yml
+  when: snapraid_current_version.stdout == ''
+
+- name: Configure SnapRAID arrays
+  include: configure_snapraid.yml array={{ item }}
+  with_items: "{{ snapraid_arrays }}"
+
+- name: Configure SnapRAID cron sync job
+  include: configure_cron_sync.yml

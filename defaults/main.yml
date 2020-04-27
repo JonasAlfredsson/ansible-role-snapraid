@@ -1,0 +1,4 @@
+snapraid_tmp_dir: "/tmp"
+snapraid_muttrc_path: "/root/.muttrc"
+snapraid_sync_script_dir: "/root/snapraid_sync"
+snapraid_sync_log_dir: "/var/log/snapraid_sync"
