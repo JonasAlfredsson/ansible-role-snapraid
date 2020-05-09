@@ -1,3 +1,4 @@
 [submodule "files/snapraid_sync"]
 	path = files/snapraid_sync
 	url = git@github.com:JonasAlfredsson/snapraid_sync.git
+	branch = master
