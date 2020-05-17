@@ -198,6 +198,17 @@ snapraid_mutt:
   password: "supersecret"
 ```
 
+The final part, of configuring this script, is to handle all the log output it
+creates. To not have it fill a single file with a million lines after a while,
+we will use [`logrotate`][9] to only keep a limited amount of old log files.
+There are only two options you will need to be aware of, and these are their
+default values.
+
+```yaml
+snapraid_sync_logrotate_interval: "daily"
+snapraid_sync_logrotate_count: 7
+```
+
 
 ## Example Playbook
 When the configuration is complete you may just include this role in your main
@@ -213,8 +224,8 @@ playbook like this:
 
 ## Manual Intervention
 In the [`snapraid_sync` repository][7] there are more details regarding the
-thoughts behind "manual intervention", but if have multiple arrays it might be
-annoying to always define all the environment variable every time. This role
+thoughts behind "manual intervention", but if you have multiple arrays it might
+be annoying to always define all the environment variable every time. This role
 will therefore create "entrypoints" for each array that you define.
 
 These "entrypoints" are nothing more than small bash scripts, with all your
@@ -245,3 +256,4 @@ sudo /root/snapraid_sync/snapraid_sync_entrypoint-array1.sh force
 [6]: https://github.com/amadvance/snapraid/releases
 [7]: https://github.com/JonasAlfredsson/snapraid_sync#interactive-intervention
 [8]: https://github.com/JonasAlfredsson/snapraid_sync#mutt
+[9]: https://linux.die.net/man/8/logrotate
