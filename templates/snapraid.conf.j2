@@ -22,7 +22,7 @@ content {{ drive.mount }}/snapraid.content
 {% endfor %}
 {% for drive in array.data_drives %}
 {% if drive.content_file is not defined or drive.content_file|bool == true %}
-content {{ drive.mount }}/snapraid.content
+content {{ drive.mount }}/.snapraid.content
 {% endif %}
 {% endfor %}
 
