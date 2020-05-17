@@ -24,7 +24,7 @@
   make:
     chdir: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}"
 
-- name: Run all build checks (this will take a long time)
+- name: Run all build checks (this may take a long time)
   make:
     chdir: "{{ snapraid_tmp_dir }}/snapraid-{{ snapraid_version }}"
     target: check

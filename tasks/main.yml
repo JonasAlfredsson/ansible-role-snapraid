@@ -31,7 +31,7 @@
 - name: Verify that the requested version of SnapRAID is newer than the one installed
   block:
     - fail:
-        msg: "The installed version of Snapraid ({{ snapraid_current_version.stdout }}) is newer than the requested version ({{ snapraid_version }})"
+        msg: "The installed version of SnapRAID ({{ snapraid_current_version.stdout }}) is newer than the requested version ({{ snapraid_version }})"
       when: snapraid_current_version.stdout is version(snapraid_version, '>')
 
     - name: Install new version of SnapRAID

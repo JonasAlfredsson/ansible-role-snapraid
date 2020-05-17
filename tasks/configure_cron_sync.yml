@@ -12,7 +12,7 @@
     - "{{ snapraid_sync_script_dir }}"
   when: item != ""
 
-- name: Push out 'snapraid_sync' script driectory
+- name: Push out all files in the 'snapraid_sync' script driectory
   become: true
   copy:
     src: "snapraid_sync/src/"
