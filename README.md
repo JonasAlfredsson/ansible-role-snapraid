@@ -41,7 +41,7 @@ identical machines there should not be any problem to define this in one
 of the `group_vars/`.
 
 An important thing to remember is that Ansible will overwrite, and not merge,
-these kind hashes/dictionaries if there are two with the same name. You can
+these kinds of hashes/dictionaries if there are two with the same name. You can
 therefore not have a part of this be defined in the `group_vars/` and then other
 parts in the `host_vars/`. If you do not like this behavior you may look into
 setting [`hash_behaviour = merge`][2], but be aware that this is not a very
@@ -92,7 +92,7 @@ expand it to as many arrays that you want. You should only make sure that they
 have unique names and do not point at the same config or content files.
 
 The `parity_drives` variable is also a list, and you will need at minimum one
-parity drive defined, while a maximum of 6 is supported by SnapRAID. The parity
+parity drive defined, with a maximum of 6 supported by SnapRAID. The parity
 mounts must **NOT** be in a data disk, and they all need unique names.
 
 **Example:**
@@ -130,7 +130,7 @@ be slightly larger).
 
 Here are the remaining variables and their short explanations:
 
-- `exclude_items` - List of files and directories to exclude
+- `exclude_items` - List of files and directories to exclude.
   - Remember that all the paths are relative at the mount points.
 - `exclude_hidden_items` - Hidden items will be ignored during 'syncs'.
   - In Unix systems this is usually files beginning with a period.
@@ -146,9 +146,10 @@ Here are the remaining variables and their short explanations:
 ### snapraid_sync
 This is a script used for automating the syncing and scrubbing process, so
 manual intervention will only be necessary when the number of deleted/updated
-files exceed your defined thresholds. Detailed explanation of this "manual
+files exceed your defined thresholds. A detailed explanation of this "manual
 intervention" can be found in [its repository][7], along with more information
-about the inner workings of this script.
+about the inner workings of this script, but there is also some extra info
+[further down](#manual-intervention) in this guide.
 
 ```yaml
 snapraid_sync_log_dir: "/var/log/snapraid_sync"
@@ -207,6 +208,28 @@ playbook like this:
   name: Install Snapraid and push out configuration files
   roles:
     - snapraid
+```
+
+
+## Manual Intervention
+In the [`snapraid_sync` repository][7] there are more details regarding the
+thoughts behind "manual intervention", but if have multiple arrays it might be
+annoying to always define all the environment variable every time. This role
+will therefore create "entrypoints" for each array that you define.
+
+These "entrypoints" are nothing more than small bash scripts, with all your
+array specific variables set, which then call upon the original
+`snapraid_sync.sh` script. With this it should therefore be possible for you
+to run an array specific "force sync" like this:
+
+```bash
+sudo /{{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{ snapraid_sync.name }}.sh force
+```
+
+e.g.
+
+```bash
+sudo /root/snapraid_sync/snapraid_sync_entrypoint-array1.sh force
 ```
 
 
