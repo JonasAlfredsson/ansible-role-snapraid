@@ -30,7 +30,7 @@
 - name: Push out cron jobs
   become: true
   template:
-    dest: "/etc/cron.d/{{ item.name }}"
+    dest: "/etc/cron.d/snapraid_sync-{{ item.name }}"
     src: cron.j2
     mode: '0750'
   with_items: "{{ snapraid_sync }}"
