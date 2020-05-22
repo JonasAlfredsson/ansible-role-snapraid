@@ -1,6 +1,6 @@
 ---
 - fail:
-    msg: You need to define which version of SnapRAID that should be installed
+    msg: 'You need to define which version of SnapRAID that should be installed (e.g. "11.3")'
   when: snapraid_version is not defined or snapraid_version == ''
 
 - name: Install packages necessary for building and running SnapRAID

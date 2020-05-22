@@ -4,7 +4,7 @@
   when: array.parity_drives is not defined or array.parity_drives|length == 0
 
 - fail:
-    msg: "SnapRAID only support a maximum of 6 parity drives"
+    msg: "SnapRAID only supports a maximum of 6 parity drives"
   when: array.parity_drives|length > 6
 
 - fail:
