@@ -12,7 +12,7 @@ exceeded or something else goes wrong.
 
 
 
-# How to Clone
+# Installation
 
 This repository makes use of a submodule, which is just pointer to another
 repository, and it needs to be initialized and downloaded as well before this
@@ -28,6 +28,16 @@ use the following command from within the previously cloned folder:
 
 ```bash
 git pull --recurse-submodules
+```
+
+When the configuration is complete you may then just include this role in your
+main playbook like this:
+
+```yaml
+- hosts: all
+  name: Install SnapRAID and push out configuration files
+  roles:
+    - snapraid
 ```
 
 
@@ -214,18 +224,6 @@ default values:
 ```yaml
 snapraid_sync_logrotate_interval: "daily"
 snapraid_sync_logrotate_count: 7
-```
-
-
-## Example Playbook
-When the configuration is complete you may just include this role in your main
-playbook like this:
-
-```yaml
-- hosts: all
-  name: Install Snapraid and push out configuration files
-  roles:
-    - snapraid
 ```
 
 
