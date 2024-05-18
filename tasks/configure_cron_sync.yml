@@ -16,12 +16,16 @@
     src: "snapraid_sync/src/"
     dest: "{{ snapraid_sync_script_dir }}"
     mode: '0750'
+    owner: "root"
+    group: "root"
 
 - name: Push out an 'entrypoint' script for each array defined
   template:
     src: snapraid_sync_entrypoint.sh.j2
     dest: "{{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{ item.name }}.sh"
     mode: '0750'
+    owner: "root"
+    group: "root"
   with_items: "{{ snapraid_sync }}"
 
 - name: Push out a cron job for each array defined
@@ -29,6 +33,8 @@
     dest: "/etc/cron.d/snapraid_sync-{{ item.name }}"
     src: cron.j2
     mode: '0750'
+    owner: "root"
+    group: "root"
   with_items: "{{ snapraid_sync }}"
 
 - name: Configure mutt
@@ -36,8 +42,13 @@
     dest: "{{ snapraid_muttrc_path }}"
     src: muttrc.j2
     mode: '0600'
+    owner: "root"
+    group: "root"
 
 - name: Push out logrotate configuration for 'snapraid_sync'
   template:
     dest: "/etc/logrotate.d/snapraid_sync"
     src: logrotate_snapraid_sync.j2
+    mode: '0600'
+    owner: "root"
+    group: "root"

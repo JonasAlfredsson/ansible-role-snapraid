@@ -15,3 +15,6 @@
   template:
     dest: "{{ array.config_file }}"
     src: snapraid.conf.j2
+    mode: '0644'
+    owner: "root"
+    group: "root"
