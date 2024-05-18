@@ -12,8 +12,8 @@ EMAIL_ADDRESS='{{ item.email_address }}' \
 {% if item.email_subject_prefix is defined %}
 EMAIL_SUBJECT_PREFIX="{{ item.email_subject_prefix }}" \
 {% endif %}
-{% if item.detele_threshold is defined %}
-DELETE_THRESHOLD='{{ item.detele_threshold }}' \
+{% if item.delete_threshold is defined %}
+DELETE_THRESHOLD='{{ item.delete_threshold }}' \
 {% endif %}
 {% if item.update_threshold is defined %}
 UPDATE_THRESHOLD='{{ item.update_threshold }}' \

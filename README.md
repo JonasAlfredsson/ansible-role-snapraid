@@ -177,7 +177,7 @@ snapraid_sync:
     scrub_schedule:
     email_address: ""
     email_subject_prefix: "SnapRAID on $(hostname) - "
-    detele_threshold: 0
+    delete_threshold: 0
     update_threshold: -1
     scrub_percent: 8
     scrub_age: 10
