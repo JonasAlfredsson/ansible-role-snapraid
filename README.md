@@ -182,7 +182,6 @@ snapraid_sync:
     scrub_percent: 8
     scrub_age: 10
     attach_log: "false"
-    snapraid_bin: "/usr/local/bin/snapraid"
     mail_bin: "/usr/bin/mutt"
 ```
 
