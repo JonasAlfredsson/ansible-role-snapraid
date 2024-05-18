@@ -1,6 +1,5 @@
 ---
 - name: Create folder structure required by 'snapraid_sync'
-  become: true
   file:
     path: "{{ item }}"
     state: directory
@@ -12,15 +11,13 @@
     - "{{ snapraid_sync_script_dir }}"
   when: item != ""
 
-- name: Push out all files in the 'snapraid_sync' script driectory
-  become: true
+- name: Push out all files in the 'snapraid_sync' script directory
   copy:
     src: "snapraid_sync/src/"
     dest: "{{ snapraid_sync_script_dir }}"
     mode: '0750'
 
 - name: Push out an 'entrypoint' script for each array defined
-  become: true
   template:
     src: snapraid_sync_entrypoint.sh.j2
     dest: "{{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{ item.name }}.sh"
@@ -28,7 +25,6 @@
   with_items: "{{ snapraid_sync }}"
 
 - name: Push out a cron job for each array defined
-  become: true
   template:
     dest: "/etc/cron.d/snapraid_sync-{{ item.name }}"
     src: cron.j2
@@ -36,14 +32,12 @@
   with_items: "{{ snapraid_sync }}"
 
 - name: Configure mutt
-  become: true
   template:
     dest: "{{ snapraid_muttrc_path }}"
     src: muttrc.j2
     mode: '0600'
 
 - name: Push out logrotate configuration for 'snapraid_sync'
-  become: true
   template:
     dest: "/etc/logrotate.d/snapraid_sync"
     src: logrotate_snapraid_sync.j2

@@ -12,7 +12,6 @@
   when: array.data_drives is not defined or array.data_drives|length == 0
 
 - name: "Push out the SnapRAID configuration file for array '{{ array.name }}'"
-  become: true
   template:
     dest: "{{ array.config_file }}"
     src: snapraid.conf.j2

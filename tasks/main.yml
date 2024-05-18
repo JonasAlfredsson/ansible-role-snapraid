@@ -4,7 +4,6 @@
   when: snapraid_version is not defined or snapraid_version == ''
 
 - name: Install packages necessary for building and running SnapRAID
-  become: true
   environment:
     DEBIAN_FRONTEND: noninteractive
   apt:
@@ -20,7 +19,6 @@
       - unzip
 
 - name: Get the currently installed version of SnapRAID
-  become: true
   shell: snapraid --version | sed -rn 's/snapraid v([0-9]+\.[0-9]+).*$/\1/p'
   register: snapraid_current_version
   failed_when: >
