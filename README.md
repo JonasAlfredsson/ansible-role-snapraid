@@ -175,14 +175,11 @@ snapraid_sync:
     config: "/etc/snapraid.conf"
     sync_schedule:
     scrub_schedule:
-    email_address: ""
-    email_subject_prefix: "SnapRAID on $(hostname) - "
     delete_threshold: 0
     update_threshold: -1
     scrub_percent: 8
     scrub_age: 10
     attach_log: "false"
-    mail_bin: "/usr/bin/mutt"
 ```
 
 As can be seen the `snapraid_sync` variable is a list, so it is possible to
@@ -199,19 +196,28 @@ scrub_schedule: "00 13 * * mon"
 ```
 
 If you want to be notified by email, on successful syncs or errors, you should
-define the `email_address` variable in the above configuration as well. However,
-in order to be able to receive emails over the open internet you will need an
-account on a trusted provider and configure the `mutt` email client to use
-that account ([details here][8]). As of now I have only added support for
-automatically configuring Gmail accounts in the `muttrc` file, but if you have
-such an account the following variables are available:
+define the `snapraid_sync_email_address` variable. However, in order to be able
+to receive emails over the open internet you will need an account on a trusted
+provider and configure the `mutt` email client to use that account
+([details here][8]). As of now there is only support for automatically
+configuring Gmail accounts in the `muttrc` file, but if you have such an
+account the following variables are available:
 
 ```yaml
-snapraid_muttrc_path: "/root/.muttrc"
+snapraid_sync_email_address: ""
 snapraid_mutt:
   realname: "User Name"
   email: "my-username@gmail.com"
   password: "supersecret"
+```
+
+Below are a couple of other variables related to this role, and their default
+values. You probably don't need to edit these.
+
+```yaml
+snapraid_sync_email_subject_prefix: "SnapRAID on $(hostname) - "
+snapraid_muttrc_path: "/root/.muttrc"
+snapraid_sync_mail_bin: "/usr/bin/mutt"
 ```
 
 The final part, of configuring this script, is to handle all the log output it

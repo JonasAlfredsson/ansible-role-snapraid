@@ -6,11 +6,11 @@
 CONFIG_FILE='{{ item.config }}' \
 LOG_FILE="{{ snapraid_sync_log_dir }}/{{ item.name }}.log" \
 NONINTERACTIVE="${NONINTERACTIVE:-false}" \
-{% if item.email_address is defined %}
-EMAIL_ADDRESS='{{ item.email_address }}' \
+{% if snapraid_sync_email_address is defined %}
+EMAIL_ADDRESS='{{ snapraid_sync_email_address }}' \
 {% endif %}
-{% if item.email_subject_prefix is defined %}
-EMAIL_SUBJECT_PREFIX="{{ item.email_subject_prefix }}" \
+{% if snapraid_sync_email_subject_prefix is defined %}
+EMAIL_SUBJECT_PREFIX="{{ snapraid_sync_email_subject_prefix }}" \
 {% endif %}
 {% if item.delete_threshold is defined %}
 DELETE_THRESHOLD='{{ item.delete_threshold }}' \
@@ -27,7 +27,7 @@ SCRUB_AGE='{{ item.scrub_age }}' \
 {% if item.attach_log is defined %}
 MAIL_ATTACH_LOG='{{ item.attach_log }}' \
 {% endif %}
-{% if item.mail_bin is defined %}
-MAIL_BIN="{{ item.mail_bin }}" \
+{% if snapraid_sync_mail_bin is defined %}
+MAIL_BIN="{{ snapraid_sync_mail_bin }}" \
 {% endif %}
 {{ snapraid_sync_script_dir }}/snapraid_sync.sh "$@"
