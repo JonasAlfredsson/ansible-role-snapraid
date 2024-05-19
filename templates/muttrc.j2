@@ -19,6 +19,9 @@ set trash="+[GMail]/Trash"
 # Outgoing mail settings
 set smtp_url = "smtps://{{ snapraid_mutt.email }}@smtp.gmail.com:465/"
 set smtp_pass = "{{ snapraid_mutt.password }}"
+
+# Use encrypted communication
+set ssl_starttls=yes
 set ssl_force_tls = yes
 
 # Other settings
