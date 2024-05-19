@@ -7,22 +7,22 @@
 # Parity drives
 {% for drive in array.parity_drives %}
 {% if loop.index == 1 %}
-parity {{ drive.mount }}/snapraid.parity
+parity {{ drive.mount }}/snapraid_{{ array.name }}.parity
 {% else %}
-{{ loop.index }}-parity {{ drive.mount }}/snapraid.{{ loop.index }}-parity
+{{ loop.index }}-parity {{ drive.mount }}/snapraid_{{ array.name }}.{{ loop.index }}-parity
 {% endif %}
 {% endfor %}
 
 # Content files
-content {{ array.primary_content_file }}
+content {{ array.conf_dir }}/snapraid_{{ array.name }}.content
 {% for drive in array.parity_drives %}
 {% if drive.content_file is defined and drive.content_file|bool == true %}
-content {{ drive.mount }}/snapraid.content
+content {{ drive.mount }}/.snapraid_{{ array.name }}.content
 {% endif %}
 {% endfor %}
 {% for drive in array.data_drives %}
 {% if drive.content_file is not defined or drive.content_file|bool == true %}
-content {{ drive.mount }}/.snapraid.content
+content {{ drive.mount }}/.snapraid_{{ array.name }}.content
 {% endif %}
 {% endfor %}
 

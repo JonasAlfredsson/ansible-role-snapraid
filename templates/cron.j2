@@ -1,11 +1,11 @@
 ################################################################################
 #>> This file is managed by Ansible - changes made here will be overwritten. <<#
 ################################################################################
-{% if item.sync_schedule is defined %}
+{% if array.snapraid_sync.sync_schedule is defined %}
 # SnapRAID sync schedule
-{{ item.sync_schedule }} root NONINTERACTIVE='true' {{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{item.name}}.sh > /dev/null
+{{ array.snapraid_sync.sync_schedule }} root NONINTERACTIVE='true' {{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{array.name}}.sh > /dev/null
 {% endif %}
-{% if item.scrub_schedule is defined %}
+{% if array.snapraid_sync.scrub_schedule is defined %}
 # SnapRAID scrub schedule
-{{ item.scrub_schedule }} root NONINTERACTIVE='true' {{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{item.name}}.sh scrub > /dev/null
+{{ array.snapraid_sync.scrub_schedule }} root NONINTERACTIVE='true' {{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{array.name}}.sh scrub > /dev/null
 {% endif %}

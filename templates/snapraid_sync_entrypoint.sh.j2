@@ -3,8 +3,8 @@
 #>> This file is managed by Ansible - changes made here will be overwritten. <<#
 ################################################################################
 
-CONFIG_FILE='{{ item.config }}' \
-LOG_FILE="{{ snapraid_sync_log_dir }}/{{ item.name }}.log" \
+CONFIG_FILE='{{ array.conf_dir }}/snapraid_{{ array.name }}.conf' \
+LOG_FILE="{{ snapraid_sync_log_dir }}/{{ array.name }}.log" \
 NONINTERACTIVE="${NONINTERACTIVE:-false}" \
 {% if snapraid_sync_email_address is defined %}
 EMAIL_ADDRESS='{{ snapraid_sync_email_address }}' \
@@ -12,20 +12,20 @@ EMAIL_ADDRESS='{{ snapraid_sync_email_address }}' \
 {% if snapraid_sync_email_subject_prefix is defined %}
 EMAIL_SUBJECT_PREFIX="{{ snapraid_sync_email_subject_prefix }}" \
 {% endif %}
-{% if item.delete_threshold is defined %}
-DELETE_THRESHOLD='{{ item.delete_threshold }}' \
+{% if array.snapraid_sync.delete_threshold is defined %}
+DELETE_THRESHOLD='{{ array.snapraid_sync.delete_threshold }}' \
 {% endif %}
-{% if item.update_threshold is defined %}
-UPDATE_THRESHOLD='{{ item.update_threshold }}' \
+{% if array.snapraid_sync.update_threshold is defined %}
+UPDATE_THRESHOLD='{{ array.snapraid_sync.update_threshold }}' \
 {% endif %}
-{% if item.scrub_percent is defined %}
-SCRUB_PERCENT='{{ item.scrub_percent }}' \
+{% if array.snapraid_sync.scrub_percent is defined %}
+SCRUB_PERCENT='{{ array.snapraid_sync.scrub_percent }}' \
 {% endif %}
-{% if item.scrub_age is defined %}
-SCRUB_AGE='{{ item.scrub_age }}' \
+{% if array.snapraid_sync.scrub_age is defined %}
+SCRUB_AGE='{{ array.snapraid_sync.scrub_age }}' \
 {% endif %}
-{% if item.attach_log is defined %}
-MAIL_ATTACH_LOG='{{ item.attach_log }}' \
+{% if array.snapraid_sync.attach_log is defined %}
+MAIL_ATTACH_LOG='{{ array.snapraid_sync.attach_log }}' \
 {% endif %}
 {% if snapraid_sync_mail_bin is defined %}
 MAIL_BIN="{{ snapraid_sync_mail_bin }}" \

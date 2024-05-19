@@ -1,15 +1,14 @@
 # ansible-role-snapraid
 
-An Ansible role which will download, build and install SnapRAID on Debian 10
+An Ansible role which will download, build and install SnapRAID on Debian 12
 (other releases are untested).
 
 This role supports defining multiple SnapRAID arrays, each with their own
 configuration file, and the syncing/scrubbing process for them can be automated
-via my included [`snapraid_sync`][1] script. It is cron that is used to trigger
-the script on a configurable schedule, and it will send you notification emails
-when syncs are successful, threshold levels for deleted/updated files are
+via the included [`snapraid_sync`][1] script. It is `cron` that is used to
+trigger the script on a configurable schedule, and it will send you notification
+emails when syncs are successful, threshold levels for deleted/updated files are
 exceeded or something else goes wrong.
-
 
 
 # Installation
@@ -44,9 +43,9 @@ main playbook like this:
 
 # Usage
 
-Since the SnapRAID arrays are often unique to each individual host, I usual
+Since the SnapRAID arrays are often unique to each individual host, I usually
 prefer to define these individual configurations in their respective
-`host_vars/{{ ansible_hostname }}` file. However, if you have multiple
+`host_vars/{{ ansible_hostname }}` path. However, if you have multiple
 identical machines there should not be any problem to define all of this in
 one of the `group_vars/` files.
 
@@ -60,9 +59,10 @@ filter or the [`merge_vars`][4] action plugin.
 
 
 ## Example Configuration
-There are two parts to this configuration; first SnapRAID itself and its arrays,
-and then my [`snapraid_sync`][1] script. The second one is not necessary if
-you don't want to, but it will automate the syncing/scrubbing if configured.
+There are sort of two parts to this configuration; first SnapRAID itself and
+its arrays, and then it is variables related to the [`snapraid_sync`][1] script.
+The second one is not necessary if you don't want to, but it will automate the
+syncing/scrubbing if configured.
 
 The following examples have all the available variables included, and all the
 default values written out. So any field which is not marked with `# Required`
@@ -77,9 +77,8 @@ may be left out of your configuration if you are fine with the defaults.
 snapraid_version:  # Required
 snapraid_tmp_dir: "/tmp"
 snapraid_arrays:
-  - name:  # Required
-    config_file: "/etc/snapraid.conf"
-    primary_content_file: "/var/snapraid.content"
+  - name:  # Required and may only be [a-zA-Z_-] (limit from cron file naming).
+    conf_dir: # Required
     exclude_hidden_items: false
     exclude_items:
       - "*.unrecoverable"
@@ -90,38 +89,37 @@ snapraid_arrays:
     autosave: 500
     parity_drives:
       - mount:  # Required
-        name:  # Required
         content_file: false
     data_drives:
       - mount:  # Required
-        name:  # Required
+        name:  # Required and must be unique (space not allowed).
         content_file: true
+    snapraid_sync: []  # See next section for more details
 ```
+
+> Jump directly to the [`snapraid_sync`](#snapraid_sync) section.
 
 As can be seen the `snapraid_arrays` variable is a list, so it is possible to
 expand it to as many arrays that you want. You should only make sure that they
-have unique names and that they do not point at the same SnapRAID config or
-content files.
+have unique names.
 
 The `parity_drives` variable is also a list, and you will need at minimum one
 parity drive defined for this role to function (with a maximum of 6 supported
-by SnapRAID). The parity mounts must **NOT** be in a data disk, and they all
-need unique names.
+by SnapRAID). The parity mounts must **NOT** be in a data disk.
 
 **Example:**
 
 ```yaml
 parity_drives:
   - mount: "/mnt/parity1"
-    name: "P1"
   - mount: "/mnt/parity2"
-    name: "P2"
 ```
 
 There are no limits (that I know of) for how many data disks you may have.
-These are also defined as a list, and once again it is important that all have
-unique names. The name and mount point association of the data disks is
-relevant for parity, so do not change them afterwards.
+These are also defined as a list, and it is important that all have unique
+names since these are used as identifiers by SnapRAID. The name and mount point
+association of the data disks is relevant for parity, so do not change them
+afterwards.
 
 **Example:**
 
@@ -133,17 +131,20 @@ relevant for parity, so do not change them afterwards.
       name: "D2"
 ```
 
-You must also have at least one content file for each parity file plus one.
+You must also have at least one content file for each parity file **plus one**.
 These content files can be in the disks used for data, parity or boot, but each
-file must be in a different disk. I have made so that each data disk, by
-default, includes a content file located at `{{ mount }}/.snapraid.content`,
-which will also make so that the total amount of available space on the data
-disk remains slightly less than the full disk amount. This is a recommended
-thing to do, because the parity file will be slightly larger than the amount
-of synced data, and this content file is [excluded][10] from the sync, so it
-creates a natural buffer to hinder the parity disk from being overfilled.
+file must be in a different disk. The first and primary content file is created
+inside the `conf_dir` along with the `.conf` file for this array.
 
-Here are the remaining variables and their short explanations:
+By default it is also configured so that each data disk includes a content file
+located at `{{ mount }}/.snapraid_{{ name }}.content`. This has the added
+benefit of making total amount of available space on the data disk
+**slightly less** than the full disk amount. This is a recommended thing to do,
+because the parity file will be **slightly larger** than the amount of synced
+data, and this content file is [excluded][10] from the sync, so it creates a
+natural buffer to hinder the parity disk from being overfilled.
+
+Then there are the remaining variables and their short explanations:
 
 - `exclude_items` - List of files and directories to exclude.
   - Remember that all the paths are [relative][11] at the mount points.
@@ -164,35 +165,25 @@ manual intervention will only be necessary when the number of deleted/updated
 files exceed your defined thresholds. A detailed explanation of this "manual
 intervention" can be found in [its repository][7], along with more information
 about the inner workings of this script, but there is also some extra info
-[at the bottom](#manual-intervention) of this guide. Anyway, here are all the
-variables with their default values:
+[at the bottom](#manual-intervention) of this guide.
+
+Anyway, the automatic syncing is defined on a per-array basis (first mentioned
+in the [previous section](#snapraid)), and the `*_schedule` variables are then
+normal `cron` expressions.
 
 ```yaml
-snapraid_sync_log_dir: "/var/log/snapraid_sync"
-snapraid_sync_script_dir: "/root/snapraid_sync"
-snapraid_sync:
-  - name:  # Required, and may only be [a-zA-Z_-].
-    config: "/etc/snapraid.conf"
-    sync_schedule:
-    scrub_schedule:
-    delete_threshold: 0
-    update_threshold: -1
-    scrub_percent: 8
-    scrub_age: 10
-    attach_log: "false"
-```
-
-As can be seen the `snapraid_sync` variable is a list, so it is possible to
-expand it to as many arrays that you have defined [above](#snapraid). You
-should only make sure that they have unique names (which do not need to be the
-same as the array name) and that they point to the correct config file. The
-`*_schedule` variables are then normal `cron` expressions.
-
-**Example:**
-
-```yaml
-sync_schedule: "05 9,22 * * 2-7"
-scrub_schedule: "00 13 * * mon"
+snapraid_arrays:
+  - name:  # Defined in previous section.
+    config:  # Defined in previous section.
+    ...
+    snapraid_sync:
+      - sync_schedule: "05 9,22 * * 2-7"  # Example -> sync at 09:05 and 22:05 every day except monday.
+        scrub_schedule: "00 13 * * mon"  # Example -> scrub at 13:00 on mondays.
+        delete_threshold: 0
+        update_threshold: -1
+        scrub_percent: 8
+        scrub_age: 10
+        attach_log: "false"
 ```
 
 If you want to be notified by email, on successful syncs or errors, you should
@@ -205,30 +196,32 @@ account the following variables are available:
 
 ```yaml
 snapraid_sync_email_address: ""
+snapraid_sync_email_subject_prefix: "SnapRAID on $(hostname) - "
 snapraid_mutt:
   realname: "User Name"
   email: "my-username@gmail.com"
   password: "supersecret"
 ```
 
+It is also necessary to handle all the log output it creates. To not have it
+fill a single file with a million lines after a while, we will use
+[`logrotate`][9] to only keep a limited amount of old log files. There are
+only three options you will need to be aware of, and these are their default
+values:
+
+```yaml
+snapraid_sync_log_dir: "/var/log/snapraid_sync"
+snapraid_sync_logrotate_interval: "daily"
+snapraid_sync_logrotate_count: 7
+```
+
 Below are a couple of other variables related to this role, and their default
 values. You probably don't need to edit these.
 
 ```yaml
-snapraid_sync_email_subject_prefix: "SnapRAID on $(hostname) - "
+snapraid_sync_script_dir: "/root/snapraid_sync"
 snapraid_muttrc_path: "/root/.muttrc"
 snapraid_sync_mail_bin: "/usr/bin/mutt"
-```
-
-The final part, of configuring this script, is to handle all the log output it
-creates. To not have it fill a single file with a million lines after a while,
-we will use [`logrotate`][9] to only keep a limited amount of old log files.
-There are only two options you will need to be aware of, and these are their
-default values:
-
-```yaml
-snapraid_sync_logrotate_interval: "daily"
-snapraid_sync_logrotate_count: 7
 ```
 
 

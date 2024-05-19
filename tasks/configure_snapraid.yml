@@ -13,7 +13,7 @@
 
 - name: "Create SnapRAID configuration folder for array '{{ array.name }}'"
   file:
-    path: "{{ array.config_file | dirname }}"
+    path: "{{ array.conf_dir }}"
     state: directory
     mode: '0755'
     owner: "root"
@@ -21,16 +21,27 @@
 
 - name: "Push out the SnapRAID configuration file for array '{{ array.name }}'"
   template:
-    dest: "{{ array.config_file }}"
+    dest: "{{ array.conf_dir }}/snapraid_{{ array.name }}.conf"
     src: snapraid.conf.j2
     mode: '0644'
     owner: "root"
     group: "root"
 
-- name: "Create SnapRAID folder for primary content file for array '{{ array.name }}'"
-  file:
-    path: "{{ array.primary_content_file | dirname }}"
-    state: directory
-    mode: '0755'
-    owner: "root"
-    group: "root"
+- name: "Configure automatic syncing"
+  block:
+    - name: "Push out 'entrypoint' script for array '{{ array.name }}'"
+      template:
+        src: snapraid_sync_entrypoint.sh.j2
+        dest: "{{ snapraid_sync_script_dir }}/snapraid_sync_entrypoint-{{ array.name }}.sh"
+        mode: '0750'
+        owner: "root"
+        group: "root"
+
+    - name: "Push out a cron job for array '{{ array.name }}'"
+      template:
+        dest: "/etc/cron.d/snapraid_sync-{{ array.name }}"
+        src: cron.j2
+        mode: '0750'
+        owner: "root"
+        group: "root"
+  when: array.snapraid_sync is defined

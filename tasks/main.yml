@@ -43,9 +43,43 @@
   include: install_snapraid.yml
   when: snapraid_current_version.stdout == ''
 
+- name: Create folder structure required by 'snapraid_sync'
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0750'
+    owner: "root"
+    group: "root"
+  with_items:
+    - "{{ snapraid_sync_log_dir }}"
+    - "{{ snapraid_sync_script_dir }}"
+
+- name: Push out all files in the 'snapraid_sync' script directory
+  copy:
+    src: "snapraid_sync/src/"
+    dest: "{{ snapraid_sync_script_dir }}"
+    mode: '0750'
+    owner: "root"
+    group: "root"
+
+- name: Configure mutt to be able to send emails over the internet
+  template:
+    dest: "{{ snapraid_muttrc_path }}"
+    src: muttrc.j2
+    mode: '0600'
+    owner: "root"
+    group: "root"
+  when: snapraid_sync_email_address is defined
+
 - name: Configure SnapRAID arrays
   include: configure_snapraid.yml array={{ item }}
   with_items: "{{ snapraid_arrays }}"
+  when: snapraid_arrays is defined
 
-- name: Configure SnapRAID cron sync job
-  include: configure_cron_sync.yml
+- name: Push out logrotate configuration for 'snapraid_sync'
+  template:
+    dest: "/etc/logrotate.d/snapraid_sync"
+    src: logrotate_snapraid_sync.j2
+    mode: '0600'
+    owner: "root"
+    group: "root"
