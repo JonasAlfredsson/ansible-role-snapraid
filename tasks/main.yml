@@ -1,12 +1,12 @@
 ---
-- fail:
+- ansible.builtin.fail:
     msg: 'You need to define which version of SnapRAID that should be installed (e.g. "11.3")'
   when: snapraid_version is not defined or snapraid_version == ''
 
 - name: Install packages necessary for building and running SnapRAID
   environment:
     DEBIAN_FRONTEND: noninteractive
-  apt:
+  ansible.builtin.apt:
     name: "{{ packages }}"
     state: present
   vars:
@@ -19,7 +19,7 @@
       - unzip
 
 - name: Get the currently installed version of SnapRAID
-  shell: snapraid --version | sed -rn 's/snapraid v([0-9]+\.[0-9]+).*$/\1/p'
+  ansible.builtin.shell: snapraid --version | sed -rn 's/snapraid v([0-9]+\.[0-9]+).*$/\1/p'
   register: snapraid_current_version
   check_mode: false
   changed_when: false
@@ -30,21 +30,21 @@
 
 - name: Verify that the requested version of SnapRAID is newer than the one installed
   block:
-    - fail:
+    - ansible.builtin.fail:
         msg: "The installed version of SnapRAID ({{ snapraid_current_version.stdout }}) is newer than the requested version ({{ snapraid_version }})"
       when: snapraid_current_version.stdout is version(snapraid_version, '>')
 
     - name: Install new version of SnapRAID
-      include: install_snapraid.yml
+      ansible.builtin.include_tasks: install_snapraid.yml
       when: snapraid_current_version.stdout is version(snapraid_version, '<')
   when: snapraid_current_version.stdout != ''
 
 - name: Install SnapRAID
-  include: install_snapraid.yml
+  ansible.builtin.include_tasks: install_snapraid.yml
   when: snapraid_current_version.stdout == ''
 
 - name: Create folder structure required by 'snapraid_sync'
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: '0750'
@@ -55,7 +55,7 @@
     - "{{ snapraid_sync_script_dir }}"
 
 - name: Push out all files in the 'snapraid_sync' script directory
-  copy:
+  ansible.builtin.copy:
     src: "snapraid_sync/src/"
     dest: "{{ snapraid_sync_script_dir }}"
     mode: '0750'
@@ -63,7 +63,7 @@
     group: "root"
 
 - name: Configure mutt to be able to send emails over the internet
-  template:
+  ansible.builtin.template:
     dest: "{{ snapraid_muttrc_path }}"
     src: muttrc.j2
     mode: '0600'
@@ -72,12 +72,14 @@
   when: snapraid_sync_email_address is defined
 
 - name: Configure SnapRAID arrays
-  include: configure_snapraid.yml array={{ item }}
+  ansible.builtin.include_tasks: configure_snapraid.yml
+  vars:
+    array: "{{ item }}"
   with_items: "{{ snapraid_arrays }}"
   when: snapraid_arrays is defined
 
 - name: Push out logrotate configuration for 'snapraid_sync'
-  template:
+  ansible.builtin.template:
     dest: "/etc/logrotate.d/snapraid_sync"
     src: logrotate_snapraid_sync.j2
     mode: '0600'
