@@ -19,29 +19,45 @@
       - unzip
 
 - name: Get the currently installed version of SnapRAID
-  ansible.builtin.shell: snapraid --version | sed -rn 's/snapraid v([0-9]+\.[0-9]+).*$/\1/p'
-  register: snapraid_current_version
-  check_mode: false
+  ansible.builtin.shell: "snapraid --version"
+  check_mode: no
+  register: maybe_snapraid_version
   changed_when: false
   failed_when: >
-    (snapraid_current_version.rc != 0)
-    and not
-    ("snapraid: command not found" in snapraid_current_version.stderr)
+    (
+      (maybe_snapraid_version.rc != 0) and not ("not found" in maybe_snapraid_version.stderr)
+    )
+    or
+    (
+      (maybe_snapraid_version.rc == 0) and (maybe_snapraid_version.stdout == "")
+    )
+
+- name: Extract only the version number from the output
+  ansible.builtin.set_fact:
+    snapraid_current_version: |-
+      {% if 'not found' in maybe_snapraid_version.stderr %}
+      {{- '' -}}{# Return empty string in case of no snapraid installed #}
+      {% else %}
+      {{-
+        maybe_snapraid_version.stdout_lines | select('search', 'snapraid v') | first |
+        regex_search('^\s*snapraid v([0-9]+\.[0-9]+)\s+.*?$', '\1') | first
+      -}}
+      {% endif %}
 
 - name: Verify that the requested version of SnapRAID is newer than the one installed
   block:
     - ansible.builtin.fail:
-        msg: "The installed version of SnapRAID ({{ snapraid_current_version.stdout }}) is newer than the requested version ({{ snapraid_version }})"
-      when: snapraid_current_version.stdout is version(snapraid_version, '>')
+        msg: "The installed version of SnapRAID ({{ snapraid_current_version }}) is newer than the requested version ({{ snapraid_version }})"
+      when: snapraid_current_version is version(snapraid_version, '>')
 
     - name: Install new version of SnapRAID
       ansible.builtin.include_tasks: install_snapraid.yml
-      when: snapraid_current_version.stdout is version(snapraid_version, '<')
-  when: snapraid_current_version.stdout != ''
+      when: snapraid_current_version is version(snapraid_version, '<')
+  when: snapraid_current_version != ''
 
 - name: Install SnapRAID
   ansible.builtin.include_tasks: install_snapraid.yml
-  when: snapraid_current_version.stdout == ''
+  when: snapraid_current_version == ''
 
 - name: Create folder structure required by 'snapraid_sync'
   ansible.builtin.file:
